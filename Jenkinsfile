@@ -91,7 +91,7 @@ spec:
       '''
     }
     always {
-      node {
+      node ('any') {
         echo "Archiving setup logs..."
         archiveArtifacts artifacts: 'terraform/logs/*.txt', fingerprint: true, allowEmptyArchive: true
       }
