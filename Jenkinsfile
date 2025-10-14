@@ -31,6 +31,7 @@ spec:
   }
 
   stages {
+
     stage('Checkout') {
       steps {
         checkout scm
@@ -45,7 +46,7 @@ spec:
               cd ${TF_DIR}
               terraform init -input=false
 
-              # timestamp unique pour forcer la reprovision
+              # Timestamp unique pour forcer la reprovision
               TS=$(date +%s)
 
               terraform apply -auto-approve \
@@ -62,13 +63,14 @@ spec:
     stage('Retrieve setup logs') {
       steps {
         container('ssh') {
+          sh 'apk add --no-cache openssh-client'  // Installe le client SSH
           withCredentials([sshUserPrivateKey(credentialsId: 'vm_ssh_key', keyFileVariable: 'SSH_KEY_PATH')]) {
             sh '''
               mkdir -p ${TF_DIR}/logs
               LOG_FILE=${TF_DIR}/logs/hextris_setup_$(date +%s).txt
 
               echo "Retrieving /var/log/hextris_setup.log from ${REMOTE_HOST}..."
-              ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH ${SSH_USER}@${REMOTE_HOST} "sudo cat /var/log/hextris_setup.log" > $LOG_FILE || echo "Log not found."
+              ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH ${SSH_USER}@${REMOTE_HOST} "sudo cat /var/log/hextris_setup.log" > $LOG_FILE || echo "⚠️ Log not found."
 
               echo "Showing last 20 lines of log for preview:"
               tail -n 20 $LOG_FILE || true
@@ -82,11 +84,16 @@ spec:
   post {
     success {
       echo "Hextris successfully deployed at: http://${params.REMOTE_HOST}"
+      sh '''
+        echo "----- Last 30 lines of Hextris setup log -----"
+        tail -n 30 terraform/logs/*.txt || true
+        echo "---------------------------------------------"
+      '''
     }
     always {
       node {
-      echo "Archiving setup logs..."
-      archiveArtifacts artifacts: 'terraform/logs/*.txt', fingerprint: true, allowEmptyArchive: true
+        echo "Archiving setup logs..."
+        archiveArtifacts artifacts: 'terraform/logs/*.txt', fingerprint: true, allowEmptyArchive: true
       }
     }
   }
