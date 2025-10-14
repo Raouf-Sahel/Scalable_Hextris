@@ -14,7 +14,7 @@ spec:
       command: [ "cat" ]
       tty: true
     - name: ssh
-      image: alpine/ssh
+      image: alpine:latest
       command: [ "cat" ]
       tty: true
 """
@@ -67,10 +67,10 @@ spec:
               mkdir -p ${TF_DIR}/logs
               LOG_FILE=${TF_DIR}/logs/hextris_setup_$(date +%s).txt
 
-              echo "📦 Retrieving /var/log/hextris_setup.log from ${REMOTE_HOST}..."
-              ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH ${SSH_USER}@${REMOTE_HOST} "sudo cat /var/log/hextris_setup.log" > $LOG_FILE || echo "⚠️ Log not found."
+              echo "Retrieving /var/log/hextris_setup.log from ${REMOTE_HOST}..."
+              ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH ${SSH_USER}@${REMOTE_HOST} "sudo cat /var/log/hextris_setup.log" > $LOG_FILE || echo "Log not found."
 
-              echo "📖 Showing last 20 lines of log for preview:"
+              echo "Showing last 20 lines of log for preview:"
               tail -n 20 $LOG_FILE || true
             '''
           }
@@ -81,11 +81,13 @@ spec:
 
   post {
     success {
-      echo "✅ Hextris successfully deployed at: http://${params.REMOTE_HOST}"
+      echo "Hextris successfully deployed at: http://${params.REMOTE_HOST}"
     }
     always {
-      echo "📁 Archiving setup logs..."
+      node {
+      echo "Archiving setup logs..."
       archiveArtifacts artifacts: 'terraform/logs/*.txt', fingerprint: true, allowEmptyArchive: true
+      }
     }
   }
 }
