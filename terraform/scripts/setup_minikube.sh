@@ -83,10 +83,11 @@ echo "[+] Building Docker image inside Minikube..."
 eval "$(minikube docker-env)"
 docker build -t hextris:latest .
 
-# --- Déploiement avec Helm ---
-INGRESS_HOST="${INGRESS_HOST:-$(hostname -I | awk '{print $1}')}"
-echo "[+] Deploying Hextris via Helm (host: ${INGRESS_HOST})..."
-helm upgrade --install hextris ./helm/hextris --set ingress.host="${INGRESS_HOST}"
+# --- Deploy Helm chart ---
+echo "[+] Deploying Hextris via Helm without DNS host (public IP access)..."
+helm upgrade --install hextris ./helm/hextris \
+  --set ingress.enabled=true \
+  --set ingress.host=""
 
 # --- Validation du déploiement ---
 echo "[+] Waiting for Hextris pods to be ready..."
