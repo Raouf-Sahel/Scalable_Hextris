@@ -1,6 +1,6 @@
 output "app_url" {
   description = "URL to access the Hextris application"
-  value       = "http://${var.remote_host}"
+  value       = "http://${var.remote_host}:8080"
 }
 
 output "setup_log_path" {
