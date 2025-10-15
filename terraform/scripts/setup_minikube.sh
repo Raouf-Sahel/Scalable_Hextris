@@ -50,7 +50,7 @@ fi
 echo "[+] Starting Minikube..."
 if ! sudo minikube status >/dev/null 2>&1; then
   # Utilisation du driver "none" pour éviter DRV_AS_ROOT
-  sudo minikube start --driver=none --cpus=2 --memory=4096
+  sudo minikube start --driver=docker --cpus=2 --memory=4096
 else
   echo "[✓] Minikube already running."
 fi
