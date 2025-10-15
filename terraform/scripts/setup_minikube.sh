@@ -94,5 +94,5 @@ helm upgrade --install hextris ./helm/hextris \
 # --- Validation du déploiement ---
 echo "[+] Waiting for Hextris pods to be ready..."
 kubectl rollout status deployment/hextris --timeout=180s || true
-
+sudo nohup kubectl port-forward service/hextris 8080:80 --address 0.0.0.0 >/tmp/hextris_portforward.log 2>&1 &
 echo "=== Hextris setup finished successfully at $(date -u) ==="
