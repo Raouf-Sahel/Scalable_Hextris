@@ -23,6 +23,10 @@ resource "null_resource" "remote_setup" {
   # Execute setup script remotely and capture logs
   provisioner "remote-exec" {
     inline = [
+      "sudo mkdir -p /var/log",
+      "sudo touch /var/log/hextris_setup.log",
+      "sudo chown ${var.ssh_user}:${var.ssh_user} /var/log/hextris_setup.log",
+      "sudo chmod 666 /var/log/hextris_setup.log",
       "set -e",
       "chmod +x /home/${var.ssh_user}/setup_minikube.sh",
       # Run script and redirect output to log file
