@@ -10,7 +10,7 @@ echo "=== Hextris setup started: $(date -u) ==="
 # --- Prérequis ---
 echo "[+] Installing base dependencies..."
 sudo apt-get update -y
-sudo apt-get install -y docker.io curl apt-transport-https ca-certificates conntrack git unzip
+sudo apt-get install -y docker.io curl apt-transport-https ca-certificates conntrack git unzip socat
 
 # --- kubectl ---
 echo "[+] Installing kubectl..."
@@ -39,24 +39,33 @@ unzip -o terraform.zip
 sudo install terraform /usr/local/bin/terraform
 rm -f terraform.zip terraform
 
-# --- Start Minikube and enable Ingress ---
+# --- Autoriser l'utilisateur courant à utiliser Docker ---
+echo "[+] Ensuring Docker permissions for user..."
+if ! groups $USER | grep -q docker; then
+  sudo usermod -aG docker $USER
+  echo "[i] Added user to docker group. You may need to log out/in for it to take effect."
+fi
+
+# --- Démarrage de Minikube ---
 echo "[+] Starting Minikube..."
 if ! sudo minikube status >/dev/null 2>&1; then
-  sudo minikube start --driver=docker --cpus=2 --memory=4096
+  # Utilisation du driver "none" pour éviter DRV_AS_ROOT
+  sudo minikube start --driver=none --cpus=2 --memory=4096
 else
   echo "[✓] Minikube already running."
 fi
 
+# --- Activer Ingress ---
 echo "[+] Enabling ingress..."
 sudo minikube addons enable ingress || true
 
-# --- Clone Git repo ---
+# --- Cloner le dépôt Git ---
 WORKDIR="/opt/scalable_hextris"
 REPO_URL="https://github.com/Raouf-Sahel/Scalable_Hextris.git"
 
 echo "[+] Cloning repository..."
 sudo mkdir -p "$WORKDIR"
-sudo chown -R ubuntu:ubuntu "$WORKDIR" || sudo chown -R $USER:$USER "$WORKDIR"
+sudo chown -R $(whoami):$(whoami) "$WORKDIR"
 cd "$WORKDIR"
 
 if [ ! -d "$WORKDIR/Scalable_Hextris/.git" ]; then
@@ -69,17 +78,17 @@ fi
 
 cd Scalable_Hextris
 
-# --- Build Docker image inside Minikube's Docker environment ---
+# --- Construction de l'image Docker ---
 echo "[+] Building Docker image inside Minikube..."
-eval "$(sudo minikube docker-env)"
+eval "$(minikube docker-env)"
 docker build -t hextris:latest .
 
-# --- Deploy Helm chart ---
+# --- Déploiement avec Helm ---
 INGRESS_HOST="${INGRESS_HOST:-$(hostname -I | awk '{print $1}')}"
 echo "[+] Deploying Hextris via Helm (host: ${INGRESS_HOST})..."
 helm upgrade --install hextris ./helm/hextris --set ingress.host="${INGRESS_HOST}"
 
-# --- Validation ---
+# --- Validation du déploiement ---
 echo "[+] Waiting for Hextris pods to be ready..."
 kubectl rollout status deployment/hextris --timeout=180s || true
 
