@@ -83,7 +83,7 @@ spec:
 
   post {
     success {
-      echo "Hextris successfully deployed at: http://${params.REMOTE_HOST}"
+      echo "Hextris successfully deployed at: http://${params.REMOTE_HOST}:8080"
       sh '''
         echo "----- Last 30 lines of Hextris setup log -----"
         tail -n 30 terraform/logs/*.txt || true
