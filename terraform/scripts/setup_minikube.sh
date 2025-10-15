@@ -65,18 +65,20 @@ REPO_URL="https://github.com/Raouf-Sahel/Scalable_Hextris.git"
 
 echo "[+] Cloning repository..."
 sudo mkdir -p "$WORKDIR"
-sudo chown -R $(whoami):$(whoami) "$WORKDIR"
+sudo chown -R ubuntu:ubuntu "$WORKDIR" || sudo chown -R $USER:$USER "$WORKDIR"
 cd "$WORKDIR"
 
-if [ ! -d "$WORKDIR/Scalable_Hextris/.git" ]; then
-  git clone "$REPO_URL" Scalable_Hextris
-else
+# Si le dossier existe déjà, on le nettoie avant re-clone
+if [ -d "$WORKDIR/Scalable_Hextris" ]; then
+  echo "[i] Repository already exists, resetting..."
   cd Scalable_Hextris
   git fetch --all
   git reset --hard origin/main
+else
+  echo "[+] Cloning fresh repository..."
+  git clone "$REPO_URL"
+  cd Scalable_Hextris
 fi
-
-cd Scalable_Hextris
 
 # --- Construction de l'image Docker ---
 echo "[+] Building Docker image inside Minikube..."
