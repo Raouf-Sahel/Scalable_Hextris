@@ -1,16 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+
 LOG="/var/log/hextris_setup.log"
-
-# --- Préparation du log ---
-echo "[+] Preparing log file..."
-sudo mkdir -p /var/log
-sudo touch "$LOG"
-sudo chown ubuntu:ubuntu "$LOG" || sudo chown $USER:$USER "$LOG"
-sudo chmod 664 "$LOG"
-
-# Rediriger toute la sortie vers le log
 exec > >(tee -a "$LOG") 2>&1
 
 echo "=== Hextris setup started: $(date -u) ==="
