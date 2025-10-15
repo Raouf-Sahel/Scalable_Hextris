@@ -70,7 +70,7 @@ spec:
               LOG_FILE=${TF_DIR}/logs/hextris_setup_$(date +%s).txt
 
               echo "Retrieving /var/log/hextris_setup.log from ${REMOTE_HOST}..."
-              ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH ${SSH_USER}@${REMOTE_HOST} "sudo cat /var/log/hextris_setup.log" > $LOG_FILE || echo "⚠️ Log not found."
+              ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH ${SSH_USER}@${REMOTE_HOST} "sudo cat /var/log/hextris_setup.log" > $LOG_FILE || echo "Log not found."
 
               echo "Showing last 20 lines of log for preview:"
               tail -n 20 $LOG_FILE || true
